@@ -1,5 +1,7 @@
 # Hotel Offer Orchestrator
 
+> **Note**: This codebase is a technical assignment submission built to a fixed functional brief, not a personal project or commercial product.
+
 The **Hotel Offer Orchestrator** is a Node.js and TypeScript microservice that aggregates overlapping hotel offers from multiple mock suppliers in parallel using Temporal workflows. It deduplicates identical hotels by name, selects the cheapest offer per hotel while retaining supplier details, and persists normalized offer data into Redis for efficient price-range filtering. The complete system runs fully containerized via Docker Compose with dedicated API, Worker, Redis, Temporal, and Postgres services.
 
 ---
