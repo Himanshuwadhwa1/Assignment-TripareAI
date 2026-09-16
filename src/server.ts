@@ -3,6 +3,7 @@ import { config } from './config/index.js';
 import { logger } from './lib/logger.js';
 import { mockSuppliersRouter } from './routes/mock-suppliers.js';
 import { hotelsRouter } from './routes/hotels.js';
+import { healthRouter } from './routes/health.js';
 
 export const app = express();
 
@@ -27,6 +28,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Wire routes
 app.use(mockSuppliersRouter);
 app.use(hotelsRouter);
+app.use(healthRouter);
 
 // Central error handler
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
