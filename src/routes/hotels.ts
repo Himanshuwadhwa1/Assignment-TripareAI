@@ -4,6 +4,7 @@ import { config } from '../config/index.js';
 import { logger } from '../lib/logger.js';
 import { getTemporalClient } from '../temporal/client.js';
 import { hotelOfferWorkflow } from '../temporal/workflows.js';
+import { findByPriceRange } from '../redis/hotels-repository.js';
 
 export const hotelsRouter = Router();
 
@@ -24,8 +25,9 @@ hotelsRouter.get('/api/hotels', async (req: Request, res: Response): Promise<voi
   // 2. Validation: minPrice / maxPrice range check
   const rawMinPrice = req.query.minPrice;
   const rawMaxPrice = req.query.maxPrice;
+  const hasPriceRange = rawMinPrice !== undefined || rawMaxPrice !== undefined;
 
-  if (rawMinPrice !== undefined || rawMaxPrice !== undefined) {
+  if (hasPriceRange) {
     if (rawMinPrice === undefined || rawMaxPrice === undefined) {
       res.status(400).json({
         error: 'INVALID_PRICE_RANGE',
@@ -82,8 +84,15 @@ hotelsRouter.get('/api/hotels', async (req: Request, res: Response): Promise<voi
       'Completed hotelOfferWorkflow'
     );
 
-    // Return bare JSON array per contract
-    res.json(result.hotels);
+    // If price range is specified, read filtered results back from Redis using ZRANGEBYSCORE
+    if (hasPriceRange) {
+      const minPrice = Number(rawMinPrice);
+      const maxPrice = Number(rawMaxPrice);
+      const filteredHotels = await findByPriceRange(city, minPrice, maxPrice);
+      res.json(filteredHotels);
+    } else {
+      res.json(result.hotels);
+    }
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
     logger.error({ city, workflowId, err: errMsg }, 'hotelOfferWorkflow failed');

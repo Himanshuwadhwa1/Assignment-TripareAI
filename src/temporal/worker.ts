@@ -3,6 +3,7 @@ import { Worker, NativeConnection } from '@temporalio/worker';
 import { config } from '../config/index.js';
 import { logger } from '../lib/logger.js';
 import * as fetchActivities from './activities/fetch-suppliers.js';
+import * as saveActivities from './activities/save-hotels.js';
 
 async function runWorker() {
   const connection = await NativeConnection.connect({
@@ -18,6 +19,7 @@ async function runWorker() {
     workflowsPath,
     activities: {
       ...fetchActivities,
+      ...saveActivities,
     },
   });
 

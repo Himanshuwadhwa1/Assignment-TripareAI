@@ -1,9 +1,19 @@
 import { proxyActivities, log } from '@temporalio/workflow';
-import type * as activities from './activities/fetch-suppliers.js';
+import type * as fetchActivities from './activities/fetch-suppliers.js';
+import type * as saveActivities from './activities/save-hotels.js';
 import { SupplierHotel, HotelOfferWorkflowInput, HotelOfferWorkflowResult } from '../domain/types.js';
 import { mergeOffers } from '../domain/merge-offers.js';
 
-const { fetchSupplierA, fetchSupplierB } = proxyActivities<typeof activities>({
+const { fetchSupplierA, fetchSupplierB } = proxyActivities<typeof fetchActivities>({
+  startToCloseTimeout: '5s',
+  retry: {
+    initialInterval: '500ms',
+    backoffCoefficient: 2,
+    maximumAttempts: 3,
+  },
+});
+
+const { saveHotelsToRedis } = proxyActivities<typeof saveActivities>({
   startToCloseTimeout: '5s',
   retry: {
     initialInterval: '500ms',
@@ -50,6 +60,9 @@ export async function hotelOfferWorkflow(
     }
 
     const merged = mergeOffers(listA, listB);
+
+    // Save merged offers to Redis
+    await saveHotelsToRedis(city, merged);
 
     log.info(
       `hotelOfferWorkflow completed for city '${city}': ${merged.length} hotels found, failedSuppliers=[${failedSuppliers.join(', ')}]`
