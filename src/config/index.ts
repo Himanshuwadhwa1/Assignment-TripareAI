@@ -1,6 +1,15 @@
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
-dotenv.config();
+const customEnvFile = process.env.ENV_FILE ||
+  (process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.local');
+
+if (fs.existsSync(path.resolve(process.cwd(), customEnvFile))) {
+  dotenv.config({ path: customEnvFile });
+} else {
+  dotenv.config();
+}
 
 export interface Config {
   port: number;
