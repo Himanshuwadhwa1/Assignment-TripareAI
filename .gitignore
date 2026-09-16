@@ -11,6 +11,8 @@ logs/
 # Environment variables
 .env
 .env.local
+.env.prod
+.env.*
 .env.*.local
 
 # Operating System files
